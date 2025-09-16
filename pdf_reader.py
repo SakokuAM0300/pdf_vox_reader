@@ -1,35 +1,44 @@
-import fitz  # PyMuPDF
+import fitz
 
-def extract_text_from_pdf(pdf_path):
+def get_pdf_page_count(pdf_path):
     """
-    指定されたPDFファイルから最初のページのテキストを抽出する
+    指定されたPDFファイルの総ページ数を取得する
     """
     try:
-        # PDFファイルを開く
         doc = fitz.open(pdf_path)
-        
-        # 最初のページ（インデックス0）を取得
-        page = doc[0]
-        
-        # ページ内のテキストを抽出
-        text = page.get_text()
-        
-        # PDFを閉じる
+        page_count = doc.page_count
         doc.close()
-        
+        return page_count
+    except FileNotFoundError:
+        print(f"エラー: 指定されたファイルが見つかりません - {pdf_path}")
+        return None
+    except Exception as e:
+        print(f"PDFのページ数取得中にエラーが発生しました: {e}")
+        return None
+
+def extract_text_from_pdf(pdf_path, page_num=0):
+    """
+    指定されたPDFファイルの指定ページからテキストを抽出する
+    """
+    try:
+        doc = fitz.open(pdf_path)
+        if page_num >= doc.page_count:
+            return f"エラー: 指定されたページ番号 {page_num} は存在しません。"
+        page = doc[page_num]
+        text = page.get_text()
+        doc.close()
         return text
-        
     except FileNotFoundError:
         return f"エラー: 指定されたファイルが見つかりません - {pdf_path}"
     except Exception as e:
         return f"PDFの読み込み中にエラーが発生しました: {e}"
 
 if __name__ == "__main__":
-    # ここにテストしたいPDFファイルのパスを記述
-    # 例：my_book.pdf がプログラムと同じフォルダにある場合
-    pdf_file_path = r"C:\Users\oneof\OneDrive\デスクトップ\電大アクセス\2025\統計学\3記述統計量１ (1).pdf"
-    
-    # PDFからテキストを抽出して表示
-    extracted_text = extract_text_from_pdf(pdf_file_path)
-    print("--- 抽出されたテキスト ---")
-    print(extracted_text)
+    # このファイル単体でのテスト用コード
+    pdf_file_path = "sample.pdf"
+    page_count = get_pdf_page_count(pdf_file_path)
+    if page_count is not None:
+        print(f"総ページ数: {page_count}")
+        extracted_text = extract_text_from_pdf(pdf_file_path, 0)
+        print("--- 抽出されたテキスト ---")
+        print(extracted_text)
